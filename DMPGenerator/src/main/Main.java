@@ -14,6 +14,7 @@ import orcid.OrcidController;
 import orcid.OrcidResultResponse;
 import orcid.OrcidSearchResultResponse;
 import api.RestfulApiClient;
+import github.RepoResponse;
 import zenodo.ZenodoController;
 
 /**
@@ -59,6 +60,15 @@ public class Main extends javax.swing.JFrame {
         jLabel9 = new javax.swing.JLabel();
         cmbPrevservation = new javax.swing.JComboBox<>();
         jLabel10 = new javax.swing.JLabel();
+        etAuthors = new javax.swing.JLabel();
+        etRights = new javax.swing.JLabel();
+        etGitUrl = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        jLabel12 = new javax.swing.JLabel();
+        jLabel13 = new javax.swing.JLabel();
+        lblName = new javax.swing.JLabel();
+        lblType = new javax.swing.JLabel();
+        lblSize = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -116,6 +126,12 @@ public class Main extends javax.swing.JFrame {
 
         jLabel10.setText("Preservation Years :");
 
+        jLabel11.setText("Name :");
+
+        jLabel12.setText("Type :");
+
+        jLabel13.setText("Size :");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -168,9 +184,26 @@ public class Main extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(50, 50, 50)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel9)
+                            .addComponent(jLabel7)
                             .addComponent(jLabel8)
-                            .addComponent(jLabel7))
+                            .addComponent(jLabel9))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(etGitUrl)
+                            .addComponent(etRights)
+                            .addComponent(etAuthors)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel13)
+                                .addGap(18, 18, 18)
+                                .addComponent(lblSize))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel11)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lblName))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel12)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(lblType)))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -208,16 +241,34 @@ public class Main extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnZenodo)
                 .addGap(18, 18, 18)
-                .addComponent(jLabel7)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel7)
+                    .addComponent(etAuthors))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel8)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel8)
+                    .addComponent(etRights))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel9)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel9)
+                    .addComponent(etGitUrl))
+                .addGap(5, 5, 5)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel11)
+                    .addComponent(lblName))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblType)
+                    .addComponent(jLabel12))
+                .addGap(8, 8, 8)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel13)
+                    .addComponent(lblSize))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cmbPrevservation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel10))
-                .addContainerGap(75, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         btnSearch.getAccessibleContext().setAccessibleDescription("");
@@ -275,8 +326,31 @@ public class Main extends javax.swing.JFrame {
         // TODO add your handling code here:
         ZenodoController zenodo = new ZenodoController(new RestfulApiClient());
         //10.5281/zenodo.1314986
-        zenodo.getData(etZenodoId.getText());
-                
+        ZenodoController.OAIPMHDataResponse response = zenodo.getData(etZenodoId.getText());
+        
+        StringBuilder builder = new StringBuilder();
+        for (int i=0;i<response.creators.size();i++) {
+            builder.append(response.creators.get(i));
+            if(i != response.creators.size()-1)
+                builder.append(",");
+        }
+        etAuthors.setText(builder.toString());
+        
+        etRights.setText(response.rights.openAccess + "");
+        etGitUrl.setText(response.githubUrl);
+        
+        String[] split = response.githubUrl.split("/");
+        String owner = split[3];
+        String repoName = split[4];
+        RestfulApiClient rest = new RestfulApiClient();
+        try {
+            RepoResponse res = rest.getRepositoryDataGithub(owner, repoName);
+            lblName.setText(res.getName());
+            lblType.setText(res.getOwner().getType());
+            lblSize.setText(res.getSize()+"kb");
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_btnZenodoActionPerformed
 
     /**
@@ -318,10 +392,16 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JButton btnSearch;
     private javax.swing.JButton btnZenodo;
     private javax.swing.JComboBox<String> cmbPrevservation;
+    private javax.swing.JLabel etAuthors;
+    private javax.swing.JLabel etGitUrl;
     private javax.swing.JTextField etName;
+    private javax.swing.JLabel etRights;
     private javax.swing.JTextField etZenodoId;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -334,7 +414,10 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JLabel lblEmail;
     private javax.swing.JLabel lblFamilyName;
     private javax.swing.JLabel lblGrivenName;
+    private javax.swing.JLabel lblName;
     private javax.swing.JLabel lblOrcid;
+    private javax.swing.JLabel lblSize;
+    private javax.swing.JLabel lblType;
     private javax.swing.JTable tblNames;
     // End of variables declaration//GEN-END:variables
 }

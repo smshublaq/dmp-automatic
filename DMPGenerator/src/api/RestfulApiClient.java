@@ -5,6 +5,9 @@
  */
 package api;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import github.RepoResponse;
 import java.io.IOException;
 import model.ZenodoData;
 import okhttp3.Call;
@@ -13,9 +16,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.eclipse.egit.github.core.client.GitHubClient;
-import org.eclipse.egit.github.core.service.ContentsService;
-import org.eclipse.egit.github.core.service.RepositoryService;
 import org.simpleframework.xml.convert.AnnotationStrategy;
 import org.simpleframework.xml.core.Persister;
 import retrofit2.Retrofit;
@@ -29,6 +29,7 @@ public class RestfulApiClient {
 
     public static final String ORCID_URL = "https://pub.orcid.org/v2.1/";
     public static final String ZENODO_URL = "https://zenodo.org/";
+    public static final String GITHUB_URL = "https://api.github.com/repos/";
 
     OkHttpClient client = new OkHttpClient();
 
@@ -67,25 +68,18 @@ public class RestfulApiClient {
         return retrofit.create(ZenodoInterface.class);
 
     }
-
-    public GitHubClient githubClient() {
-        GitHubClient gitHubClient = new GitHubClient();
-
-        if (System.getenv("GITHUB_USERNAME") != null && System.getenv("GITHUB_PASSWORD") != null) {
-            gitHubClient.setCredentials(System.getenv("GITHUB_USERNAME"), System.getenv("GITHUB_PASSWORD"));
-        }
-
-        return gitHubClient;
+    
+    public RepoResponse getRepositoryDataGithub(String owner , String repoName) throws IOException{
+        Request request = new Request.Builder()
+                .url(GITHUB_URL + owner + "/" + repoName).addHeader("accept", "application/json")
+                .get()
+                .build();
+        GsonBuilder builder = new GsonBuilder();
+        Gson gson = builder.create();
+        
+        return gson.fromJson(client.newCall(request).execute().body().string(),RepoResponse.class);
     }
 
-    public ContentsService contentsService(GitHubClient gitHubClient) {
-        ContentsService contentsService = new ContentsService(gitHubClient);
-        return contentsService;
-    }
-
-    public RepositoryService repositoryService(GitHubClient gitHubClient) {
-        RepositoryService repositoryService = new RepositoryService(gitHubClient);
-        return repositoryService;
-    }
+   
 
 }
