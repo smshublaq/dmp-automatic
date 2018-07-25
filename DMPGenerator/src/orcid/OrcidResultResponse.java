@@ -10,6 +10,7 @@ package orcid;
  * @author User
  */
 public class OrcidResultResponse {
+    
     public final String givenName;
 		public final String familyName;
 		public final String emailAddress;

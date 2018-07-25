@@ -5,6 +5,7 @@
  */
 package main;
 
+import api.DataManagementPlanCreator;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
@@ -22,6 +23,10 @@ import zenodo.ZenodoController;
  * @author User
  */
 public class Main extends javax.swing.JFrame {
+
+    private ZenodoController.OAIPMHDataResponse zenodoResponse;
+    private OrcidResultResponse orcidResultResponse;
+    private String path;
 
     /**
      * Creates new form Main
@@ -69,6 +74,7 @@ public class Main extends javax.swing.JFrame {
         lblName = new javax.swing.JLabel();
         lblType = new javax.swing.JLabel();
         lblSize = new javax.swing.JLabel();
+        btnShow = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -132,6 +138,13 @@ public class Main extends javax.swing.JFrame {
 
         jLabel13.setText("Size :");
 
+        btnShow.setText("Show Data Managment Plan");
+        btnShow.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnShowActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -169,43 +182,47 @@ public class Main extends javax.swing.JFrame {
                                                 .addComponent(etName)))
                                         .addGap(0, 534, Short.MAX_VALUE))))
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel10)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(cmbPrevservation, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel6)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(btnZenodo, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(etZenodoId, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addComponent(jLabel6)
+                                .addGap(33, 33, 33)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(btnZenodo, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(etZenodoId, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGap(0, 0, Short.MAX_VALUE))))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(50, 50, 50)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel7)
-                            .addComponent(jLabel8)
-                            .addComponent(jLabel9))
-                        .addGap(18, 18, 18)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(50, 50, 50)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel7)
+                                    .addComponent(jLabel8)
+                                    .addComponent(jLabel9)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jLabel10)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(etGitUrl)
                             .addComponent(etRights)
                             .addComponent(etAuthors)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel13)
-                                .addGap(18, 18, 18)
-                                .addComponent(lblSize))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel11)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(lblName))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel12)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(lblType)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lblType, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel13)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lblSize, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(cmbPrevservation, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(btnShow, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -253,27 +270,31 @@ public class Main extends javax.swing.JFrame {
                     .addComponent(jLabel9)
                     .addComponent(etGitUrl))
                 .addGap(5, 5, 5)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel11)
+                                    .addComponent(lblName))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel12))
+                            .addComponent(lblType, javax.swing.GroupLayout.PREFERRED_SIZE, 11, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel13))
+                    .addComponent(lblSize, javax.swing.GroupLayout.PREFERRED_SIZE, 12, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel11)
-                    .addComponent(lblName))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblType)
-                    .addComponent(jLabel12))
-                .addGap(8, 8, 8)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel13)
-                    .addComponent(lblSize))
+                    .addComponent(jLabel10)
+                    .addComponent(cmbPrevservation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cmbPrevservation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel10))
-                .addContainerGap())
+                .addComponent(btnShow)
+                .addGap(65, 65, 65))
         );
 
         btnSearch.getAccessibleContext().setAccessibleDescription("");
 
-        setBounds(0, 0, 772, 648);
+        setBounds(0, 0, 772, 701);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
@@ -309,15 +330,15 @@ public class Main extends javax.swing.JFrame {
 
         // get the selected row index
         int selectedRowIndex = tblNames.getSelectedRow();
-
+        
         // set the selected row data into jtextfields
-        String path = model.getValueAt(selectedRowIndex, 1).toString();
+        path = model.getValueAt(selectedRowIndex, 1).toString();
         RestfulApiClient orac = new RestfulApiClient();
         OrcidController a = new OrcidController(orac);
-        OrcidResultResponse response = a.profile(path);
-        lblEmail.setText(response.emailAddress);
-        lblGrivenName.setText(response.givenName);
-        lblFamilyName.setText(response.familyName);
+        orcidResultResponse = a.profile(path);
+        lblEmail.setText(orcidResultResponse.emailAddress);
+        lblGrivenName.setText(orcidResultResponse.givenName);
+        lblFamilyName.setText(orcidResultResponse.familyName);
         lblOrcid.setText(path);
         
     }//GEN-LAST:event_tblNamesMouseClicked
@@ -326,20 +347,20 @@ public class Main extends javax.swing.JFrame {
         // TODO add your handling code here:
         ZenodoController zenodo = new ZenodoController(new RestfulApiClient());
         //10.5281/zenodo.1314986
-        ZenodoController.OAIPMHDataResponse response = zenodo.getData(etZenodoId.getText());
+        zenodoResponse = zenodo.getData(etZenodoId.getText());
         
         StringBuilder builder = new StringBuilder();
-        for (int i=0;i<response.creators.size();i++) {
-            builder.append(response.creators.get(i));
-            if(i != response.creators.size()-1)
+        for (int i=0;i<zenodoResponse.creators.size();i++) {
+            builder.append(zenodoResponse.creators.get(i));
+            if(i != zenodoResponse.creators.size()-1)
                 builder.append(",");
         }
         etAuthors.setText(builder.toString());
         
-        etRights.setText(response.rights.openAccess + "");
-        etGitUrl.setText(response.githubUrl);
+        etRights.setText(zenodoResponse.rights.openAccess + "");
+        etGitUrl.setText(zenodoResponse.githubUrl);
         
-        String[] split = response.githubUrl.split("/");
+        String[] split = zenodoResponse.githubUrl.split("/");
         String owner = split[3];
         String repoName = split[4];
         RestfulApiClient rest = new RestfulApiClient();
@@ -352,6 +373,11 @@ public class Main extends javax.swing.JFrame {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_btnZenodoActionPerformed
+
+    private void btnShowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowActionPerformed
+        String output = DataManagementPlanCreator.createDmp(path, orcidResultResponse, zenodoResponse);
+        System.out.println(output);
+    }//GEN-LAST:event_btnShowActionPerformed
 
     /**
      * @param args the command line arguments
@@ -390,6 +416,7 @@ public class Main extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSearch;
+    private javax.swing.JButton btnShow;
     private javax.swing.JButton btnZenodo;
     private javax.swing.JComboBox<String> cmbPrevservation;
     private javax.swing.JLabel etAuthors;
